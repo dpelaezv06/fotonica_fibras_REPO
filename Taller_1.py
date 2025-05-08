@@ -69,13 +69,10 @@ def optimizar_TE(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
     valor_min (float) == valor minimo obtenido en la minimizacion (debe ser cercano a cero si la optimizacion es exitosa) '''
 
     angulo_critico = np.arcsin(n_cleavy/n_core) #se calcula el angulo critico del guia de onda
-    angulo_inicial = 1.001*angulo_critico #se inicia con un valor de angulo critico mas el 0.1% del valor del angulo critico
+    angulo_inicial = 1.0001*angulo_critico #se inicia con un valor de angulo critico mas el 0.01% del valor del angulo critico
 
-    ''' ejecucion de la minimizacion utilizando la funcion modos_TE
-    funcion a minimizar (modos_TM)
-    punto de partida para el angulo el angulo critico + el 0.01% del angulo critico
-    parametros adicionales de la funcion
-    restriccion del angulo entre el angulo critico y 90 grados '''
+    ''' ejecucion de la minimizacion utilizando la funcion modos_TE, el punto de partida para el angulo es el angulo critico + el 0.01% del angulo critico,
+    se aplica una restriccion del angulo entre el angulo critico y 90 grados '''
     resultado = minimize(modos_TE, angulo_inicial, args=(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
     
     # Retornar el angulo optimo encontrado y el valor minimo alcanzado
@@ -97,35 +94,32 @@ def optimizar_TM(n_core, n_cleavy, espesor, modo, n_substract=None, longitud_ond
     valor_min (float) == valor minimo obtenido en la minimizacion (debe ser cercano a cero si la optimizacion es exitosa) '''
     
     angulo_critico = np.arcsin(n_cleavy/n_core) #se calcula el angulo critico del guia de onda
-    angulo_inicial = 1.001*angulo_critico #se inicia con un valor de angulo critico mas el 0.1% del valor del angulo critico
+    angulo_inicial = 1.0001*angulo_critico #se inicia con un valor de angulo critico mas el 0.01% del valor del angulo critico
 
-    ''' ejecucion de la minimizacion utilizando la funcion modos_TM
-    funcion a minimizar (modos_TM)
-    punto de partida para el angulo el angulo critico + el 0.01% del angulo critico
-    parametros adicionales de la funcion
-    restriccion del angulo entre el angulo critico y 90 grados '''
+    ''' ejecucion de la minimizacion utilizando la funcion modos_TM, el punto de partida para el angulo es el angulo critico + el 0.01% del angulo critico,
+    se aplica una restriccion del angulo entre el angulo critico y 90 grados '''
     resultado = minimize(modos_TM, angulo_inicial, args=(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
     
     # Retornar el angulo optimo encontrado y el valor minimo alcanzado
     return resultado.x[0], resultado.fun
 
-# Parametros del guia de onda
-n_core = 1.5
-n_cleavy = 1
-n_substract = 1
-espesor = 1
-modo = 0  # Primer modo
-longitud_onda = 1
 
-for modo in range(0, 4):
-    # Calculo del angulo optimo para el modo TM
-    angulo_optimo, valor_min = optimizar_TE(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda)
-    print(f"Modo TE {modo}: Angulo optimo = {angulo_optimo*(180/np.pi):.4f}°, Valor minimo = {valor_min:.4e}")
+''' parametros del guia de onda '''
+n_core = 1.5 #indice de refraccion del nucleo
+n_cleavy = 1 #indice de refraccion del recubrimiento
+n_substract = 1 #indice de refraccion del sustrato
+espesor = 1 #espesor del guia de onda
+longitud_onda = 1 #longitud de onda usada en la fibra optica
 
-
-    # Calculo del angulo optimo para el modo TM
-    angulo_optimo, valor_min = optimizar_TM(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda)
-    print(f"Modo TM {modo}: Angulo optimo = {angulo_optimo*(180/np.pi):.4f}°, Valor minimo = {valor_min:.4e}")
+''' calculo de los valores solucion de la ecuacion trascendente'''
+for modo in range(0, 4): #se recorren los valores de modos desde el 0 hasta el 3
+    angulo_optimo, valor_min = optimizar_TE(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda) #calculo del angulo para el modo TM
+    ''' printeamos por consola el valor del angulo y de la ecuacion trascendednte en ese angulo. Si el valor de la ecuacion no es cero, entonces ese modo no es 
+    permitido en el guia de onda '''
+    print(f"Modo TE {modo}: Angulo optimo = {angulo_optimo*(180/np.pi):.4f}°, Valor minimo = {valor_min:.4e}") #se arroja el print de los datos
 
 
-
+    angulo_optimo, valor_min = optimizar_TM(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda) #calculo del angulo para el modo TE
+    ''' printeamos por consola el valor del angulo y de la ecuacion trascendednte en ese angulo. Si el valor de la ecuacion no es cero, entonces ese modo no es 
+    permitido en el guia de onda '''
+    print(f"Modo TM {modo}: Angulo optimo = {angulo_optimo*(180/np.pi):.4f}°, Valor minimo = {valor_min:.4e}") #se arroja el print de los datos
