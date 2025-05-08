@@ -114,16 +114,18 @@ n_core = 1.5
 n_cleavy = 1
 n_substract = 1
 espesor = 1
-modo = 3  # Primer modo
+modo = 0  # Primer modo
 longitud_onda = 1
 
+for modo in range(0, 4):
+    # Calculo del angulo optimo para el modo TM
+    angulo_optimo, valor_min = optimizar_TE(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda)
+    print(f"Modo TE {modo}: Angulo optimo = {angulo_optimo*(180/np.pi):.4f}°, Valor minimo = {valor_min:.4e}")
 
 
-# Calculo del angulo optimo para el modo TM
-angulo_optimo, valor_min = optimizar_TE(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda)
-print(f"Modo TE {modo}: Angulo optimo = {angulo_optimo*(180/np.pi):.4f}°, Valor minimo = {valor_min:.4e}")
+    # Calculo del angulo optimo para el modo TM
+    angulo_optimo, valor_min = optimizar_TM(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda)
+    print(f"Modo TM {modo}: Angulo optimo = {angulo_optimo*(180/np.pi):.4f}°, Valor minimo = {valor_min:.4e}")
 
 
-# Calculo del angulo optimo para el modo TM
-angulo_optimo, valor_min = optimizar_TM(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda)
-print(f"Modo TM {modo}: Angulo optimo = {angulo_optimo*(180/np.pi):.4f}°, Valor minimo = {valor_min:.4e}")
+
