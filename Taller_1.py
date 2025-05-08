@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.optimize import minimize
 
-def modos_TE(n_core, n_cleavy, espesor, angulo, modo, n_substract = None, longitud_onda = 1):
+def modos_TE(angulo, n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
     ''' funcion que realiza el calculo de las fases y la ecuacion trascendednte para modos TE
     
     Entradas:
@@ -16,9 +16,6 @@ def modos_TE(n_core, n_cleavy, espesor, angulo, modo, n_substract = None, longit
     Retorna: Valor de la ecuacion trascendente usando trazado de rayos (esta funcion esta hecha para ser usada con minimize, los 
     angulos de entrada son solamente puntos de partida desde los cuales inicia la minimizacion)'''
 
-    if n_substract is None: #en caso de que no se especifique el indice de refraccion del substract
-        n_substract = n_cleavy #se toma como un guia de onda simetrico
-
     ''' condiciones de iluminacion '''
     numero_onda = 2 * np.pi / longitud_onda #numero de onda en el vacio k_0
     angulo = angulo * np.pi / 180 #un angulo inicial para realizar la propagacion
@@ -32,7 +29,7 @@ def modos_TE(n_core, n_cleavy, espesor, angulo, modo, n_substract = None, longit
     return ecuacion_valorAbsoluto #retornamos el valor de la ecuacion tracendente, hay que hacer que sea cero para calcular el angulo de los modos propagantes
     
 
-def modos_TM(n_core, n_cleavy, espesor, angulo, modo, n_substract = None, longitud_onda = 1):
+def modos_TM(angulo, n_core, n_cleavy, espesor, modo, n_substract = None, longitud_onda = 1):
     ''' funcion que realiza el calculo de las fases y la ecuacion trascendednte para modos TM
     
     Entradas:
@@ -62,7 +59,7 @@ def modos_TM(n_core, n_cleavy, espesor, angulo, modo, n_substract = None, longit
     ecuacion_valorAbsoluto = np.abs(ecuacion_trascendente) #sacamos el valor absoluto parar evitar los valores negativos, y hacer que la ecuacion trascendente tienda a cero cuando se minimice
     return ecuacion_valorAbsoluto #retornamos el valor de la ecuacion tracendente, hay que hacer que sea cero para calcular el angulo de los modos propagantes
 
-def optimizar_TE(n_core, n_cleavy, espesor, modo, n_substract=None, longitud_onda=1):
+def optimizar_TE(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
     ''' funcion que calcula el angulo optimo para que la ecuacion trascendente de modos TE sea cero
     
     Entradas:
@@ -123,14 +120,18 @@ def optimizar_TM(n_core, n_cleavy, espesor, modo, n_substract=None, longitud_ond
 # Parametros del guia de onda
 n_core = 1.5
 n_cleavy = 1
-espesor = 0.5
+n_substract = 1
+espesor = 1
 modo = 0  # Primer modo
+longitud_onda = 1
 
-'''
-# Calculo del angulo optimo para el modo TE
-angulo_optimo, valor_min = optimizar_TE(n_core, n_cleavy, espesor, modo)
-print(f"Modo TE {modo}: Angulo optimo = {angulo_optimo:.4f}°, Valor minimo = {valor_min:.4e}")
-'''
+
+
 # Calculo del angulo optimo para el modo TM
-angulo_optimo, valor_min = optimizar_TM(n_core, n_cleavy, espesor, modo)
+angulo_optimo, valor_min = optimizar_TE(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda)
+print(f"Modo TE {modo}: Angulo optimo = {angulo_optimo:.4f}°, Valor minimo = {valor_min:.4e}")
+
+
+# Calculo del angulo optimo para el modo TM
+angulo_optimo, valor_min = optimizar_TM(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda)
 print(f"Modo TM {modo}: Angulo optimo = {angulo_optimo:.4f}°, Valor minimo = {valor_min:.4e}")
