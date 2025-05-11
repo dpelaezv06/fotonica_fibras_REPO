@@ -99,3 +99,6 @@ def optimizar_TEOndasPares(n_core, n_cleavy, espesor, modo, n_substract, longitu
 
 
 
+def modos_TMOndasPares(angulo, modo, n_core, n_cleavy, espesor, n_substract, longitud_onda):
+
+
