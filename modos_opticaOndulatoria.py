@@ -1,0 +1,101 @@
+import numpy as np
+from scipy.optimize import minimize
+
+def modos_TEOndasPares(angulo, modo, n_core, n_cleavy, espesor, n_substract, longitud_onda):
+    ''' ecuacion de los modos pares para los modos TE calculados a partir de la teoria ondulatoria, retorna el valor absoluto de la ecuacion trascendente
+    para ser minimizado
+    ENTRADAS:
+    angulo (float) == angulo del zigzag de la luz en el guia de onda
+    modo (int) == modo del guia de onda que se va a examinar
+    n_core (float) == indice de reefraccion del core del guia de onda
+    n_cleavy (float) == indice de refrarccion del cleavy del guia de onda
+    espesor (float) == espesor del guia de onda en micras
+    n_substract (float) == indice de refraccion del substract del guia de onda
+    longitud_onda (float) == longitud de onda de la iluminacion incidente en el guia de onda, en micras 
+    
+    RETORNA:
+    Valor absoluto del resultado de la ecuacion trascendente despejado a cero, con el fin de minimizar '''
+
+    numero_onda = 2 * np.pi / longitud_onda #numero de onda en el vacio de la iluminacion del guia de onda
+    kappa = n_core * numero_onda * np.cos(angulo) #parametro kappa, depende del angulo, es el que esta inmerso en la ecuacion trascendente
+    diferencia_indicesRefraccion = n_core - n_cleavy #diferencia entre los indices de refraccion del guia de onda 
+    tangente = np.arctan(np.sqrt(numero_onda**2 * diferencia_indicesRefraccion**2 / kappa**2 - 1) + modo*np.pi) #tangente inmersa en la ecuacion trascendente
+    ecuacion_pares = tangente - kappa * espesor/2 #ecuacion trascendente para los modos pares
+    ecuacion_paresAbsoluto = np.abs(ecuacion_pares) #se saca el valor absoluto para minimizar a cero
+    return ecuacion_paresAbsoluto #se retorna el valor absoluto del valor de la ecuacion trascendente
+
+def modos_TEOndasImpares(angulo, modo, n_core, n_cleavy, espesor, n_substract, longitud_onda):
+    ''' ecuacion de los modos impares para los modos TE calculados a partir de la teoria ondulatoria, retorna el valor absoluto de la ecuacion trascendente
+    para ser minimizado
+    ENTRADAS:
+    angulo (float) == angulo del zigzag de la luz en el guia de onda
+    modo (int) == modo del guia de onda que se va a examinar
+    n_core (float) == indice de reefraccion del core del guia de onda
+    n_cleavy (float) == indice de refrarccion del cleavy del guia de onda
+    espesor (float) == espesor del guia de onda en micras
+    n_substract (float) == indice de refraccion del substract del guia de onda
+    longitud_onda (float) == longitud de onda de la iluminacion incidente en el guia de onda, en micras 
+    
+    RETORNA:
+    Valor absoluto del resultado de la ecuacion trascendente despejado a cero, con el fin de minimizar '''
+
+    numero_onda = 2 * np.pi / longitud_onda #numero de onda de la iluminacion del guia de onda
+    kappa = n_core * numero_onda * np.cos(angulo) #parametro kappa, depende del angulo del zigzag del guia de onda, esta inmerso en la ecuacion trascendente
+    diferencia_indicesRefraccion = n_core - n_cleavy #diferencia de los indices de refracion del guia de onda
+    cotangente = np.arctan(np.sqrt(1/(numero_onda**2 * diferencia_indicesRefraccion**2 / kappa**2 - 1)) + modo*np.pi) #la cotangente fue escrita como una tangente para poder implementar numpy, la cotangente existe porque se estan considerando los modos impares
+    ecuacion_impares = cotangente - kappa * espesor/2 #ecuacion trascendente depejada a cero para los modos impares
+    ecuacion_imparesAbsoluto = np.abs(ecuacion_impares) #sacamos el valor absoluto para que la minimizacion se haga a cero
+    return ecuacion_imparesAbsoluto #se retorna el valor de la ecuacion trascendente despejado a cero en valor absoluto para minimizarlo
+
+def optimizar_TEOndasPares(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
+    ''' funcion que calcula el angulo optimo para que la ecuacion trascendente de modos TE sea cero
+    
+    Entradas:
+    n_core (float) == indice de refraccion del nucleo del guia de onda
+    n_cleavy (float) == indice de refraccion del recubrimiento del guia de onda
+    espesor (float) == ancho del nucleo del guia de onda (en micras)
+    modo (int) == numero del modo que se esta intentando evaluar en el guia de onda
+    n_substract (float, opcional) == indice de refraccion del sustrato (por defecto es el mismo valor que el recubrimiento)
+    longitud_onda (float, opcional) == longitud de onda de la iluminacion incidente en micras (por defecto es una micra)
+    
+    Retorna:
+    angulo_optimo (float) == angulo que hace que la ecuacion trascendente sea aproximadamente cero (en grados)
+    valor_min (float) == valor minimo obtenido en la minimizacion (debe ser cercano a cero si la optimizacion es exitosa) '''
+
+    angulo_critico = np.arcsin(n_cleavy/n_core) #se calcula el angulo critico del guia de onda
+    angulo_inicial = 1.0001*angulo_critico #se inicia con un valor de angulo critico mas el 0.01% del valor del angulo critico
+
+    ''' ejecucion de la minimizacion utilizando la funcion modos_TE, el punto de partida para el angulo es el angulo critico + el 0.01% del angulo critico,
+    se aplica una restriccion del angulo entre el angulo critico y 90 grados '''
+    resultado = minimize(modos_TEOndasPares, angulo_inicial, args=(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
+    
+    # Retornar el angulo optimo encontrado y el valor minimo alcanzado
+    return resultado.x[0], resultado.fun
+
+def optimizar_TEOndasPares(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
+    ''' funcion que calcula el angulo optimo para que la ecuacion trascendente de modos TE sea cero
+    
+    Entradas:
+    n_core (float) == indice de refraccion del nucleo del guia de onda
+    n_cleavy (float) == indice de refraccion del recubrimiento del guia de onda
+    espesor (float) == ancho del nucleo del guia de onda (en micras)
+    modo (int) == numero del modo que se esta intentando evaluar en el guia de onda
+    n_substract (float, opcional) == indice de refraccion del sustrato (por defecto es el mismo valor que el recubrimiento)
+    longitud_onda (float, opcional) == longitud de onda de la iluminacion incidente en micras (por defecto es una micra)
+    
+    Retorna:
+    angulo_optimo (float) == angulo que hace que la ecuacion trascendente sea aproximadamente cero (en grados)
+    valor_min (float) == valor minimo obtenido en la minimizacion (debe ser cercano a cero si la optimizacion es exitosa) '''
+
+    angulo_critico = np.arcsin(n_cleavy/n_core) #se calcula el angulo critico del guia de onda
+    angulo_inicial = 1.0001*angulo_critico #se inicia con un valor de angulo critico mas el 0.01% del valor del angulo critico
+
+    ''' ejecucion de la minimizacion utilizando la funcion modos_TE, el punto de partida para el angulo es el angulo critico + el 0.01% del angulo critico,
+    se aplica una restriccion del angulo entre el angulo critico y 90 grados '''
+    resultado = minimize(modos_TEOndasImpares, angulo_inicial, args=(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
+    
+    # Retornar el angulo optimo encontrado y el valor minimo alcanzado
+    return resultado.x[0], resultado.fun
+
+
+
