@@ -147,3 +147,53 @@ def modos_TMOndasImpares(angulo, modo, n_core, n_cleavy, espesor, n_substract, l
     ecuacion_trascendente = kappa * espesor/2 + modo*np.pi - tangente #ecuacion trascendente, se debe resolver, esta igualada a cero
     ecuacion_trascendenteValorAbsoluto = np.abs(ecuacion_trascendente) #se saca el valor absoluto para que el minimo valor que tome sea cero y se pueda minimizar
     return ecuacion_trascendenteValorAbsoluto #se retorna el valor absoluto de la ecuacion trascendente, para pooder minimzar esta funcion
+
+def optimizar_TMOndasPares(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
+    ''' funcion que calcula el angulo optimo para que la ecuacion trascendente de modos TE sea cero
+    
+    Entradas:
+    n_core (float) == indice de refraccion del nucleo del guia de onda
+    n_cleavy (float) == indice de refraccion del recubrimiento del guia de onda
+    espesor (float) == ancho del nucleo del guia de onda (en micras)
+    modo (int) == numero del modo que se esta intentando evaluar en el guia de onda
+    n_substract (float, opcional) == indice de refraccion del sustrato (por defecto es el mismo valor que el recubrimiento)
+    longitud_onda (float, opcional) == longitud de onda de la iluminacion incidente en micras (por defecto es una micra)
+    
+    Retorna:
+    angulo_optimo (float) == angulo que hace que la ecuacion trascendente sea aproximadamente cero (en grados)
+    valor_min (float) == valor minimo obtenido en la minimizacion (debe ser cercano a cero si la optimizacion es exitosa) '''
+
+    angulo_critico = np.arcsin(n_cleavy/n_core) #se calcula el angulo critico del guia de onda
+    angulo_inicial = 1.0001*angulo_critico #se inicia con un valor de angulo critico mas el 0.01% del valor del angulo critico
+
+    ''' ejecucion de la minimizacion utilizando la funcion modos_TE, el punto de partida para el angulo es el angulo critico + el 0.01% del angulo critico,
+    se aplica una restriccion del angulo entre el angulo critico y 90 grados '''
+    resultado = minimize(modos_TMOndasPares, angulo_inicial, args=(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
+    
+    # Retornar el angulo optimo encontrado y el valor minimo alcanzado
+    return resultado.x[0], resultado.fun
+
+def optimizar_TMOndasImPares(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
+    ''' funcion que calcula el angulo optimo para que la ecuacion trascendente de modos TE sea cero
+    
+    Entradas:
+    n_core (float) == indice de refraccion del nucleo del guia de onda
+    n_cleavy (float) == indice de refraccion del recubrimiento del guia de onda
+    espesor (float) == ancho del nucleo del guia de onda (en micras)
+    modo (int) == numero del modo que se esta intentando evaluar en el guia de onda
+    n_substract (float, opcional) == indice de refraccion del sustrato (por defecto es el mismo valor que el recubrimiento)
+    longitud_onda (float, opcional) == longitud de onda de la iluminacion incidente en micras (por defecto es una micra)
+    
+    Retorna:
+    angulo_optimo (float) == angulo que hace que la ecuacion trascendente sea aproximadamente cero (en grados)
+    valor_min (float) == valor minimo obtenido en la minimizacion (debe ser cercano a cero si la optimizacion es exitosa) '''
+
+    angulo_critico = np.arcsin(n_cleavy/n_core) #se calcula el angulo critico del guia de onda
+    angulo_inicial = 1.0001*angulo_critico #se inicia con un valor de angulo critico mas el 0.01% del valor del angulo critico
+
+    ''' ejecucion de la minimizacion utilizando la funcion modos_TE, el punto de partida para el angulo es el angulo critico + el 0.01% del angulo critico,
+    se aplica una restriccion del angulo entre el angulo critico y 90 grados '''
+    resultado = minimize(modos_TMOndasImpares, angulo_inicial, args=(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
+    
+    # Retornar el angulo optimo encontrado y el valor minimo alcanzado
+    return resultado.x[0], resultado.fun
