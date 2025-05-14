@@ -17,11 +17,11 @@ def modos_TEOndasPares(angulo, modo, n_core, n_cleavy, espesor, n_substract, lon
     Valor absoluto del resultado de la ecuacion trascendente despejado a cero, con el fin de minimizar '''
 
     numero_onda = 2 * np.pi / longitud_onda #numero de onda en el vacio de la iluminacion del guia de onda
-    kappa = n_core * numero_onda * np.cos(angulo) #parametro kappa, depende del angulo, es el que esta inmerso en la ecuacion trascendente
-    diferencia_indicesRefraccion = n_core - n_cleavy #diferencia entre los indices de refraccion del guia de onda 
-    tangente = np.arctan(np.sqrt(numero_onda**2 * diferencia_indicesRefraccion**2 / kappa**2 - 1)) - modo*np.pi #tangente inmersa en la ecuacion trascendente
-    ecuacion_pares = tangente - kappa * espesor/2 #ecuacion trascendente para los modos pares
-    ecuacion_paresAbsoluto = np.abs(ecuacion_pares) #se saca el valor absoluto para minimizar a cero
+    n_efectivo = n_core * np.sin(angulo) #calculo del indice de refraccion efectivo
+    gamma = numero_onda * np.sqrt(n_efectivo**2 - n_cleavy**2) #calculo del factor gamma, el cual depende de las condiciones del recubrimiento
+    kappa = numero_onda * np.sqrt(n_core**2 - n_efectivo**2) #calculo del factor kappa, el cual depende de las condiciones del core
+    ecuacion_trascendente = kappa * espesor/2 - np.arctan(gamma/kappa) + modo*np.pi #ecuacion trascendente igualada a cero
+    ecuacion_paresAbsoluto = np.abs(ecuacion_trascendente) #se calcula el valor absoluto para poder optimizar con minimizacion tendiendo a cero
     return ecuacion_paresAbsoluto #se retorna el valor absoluto del valor de la ecuacion trascendente
 
 def modos_TEOndasImpares(angulo, modo, n_core, n_cleavy, espesor, n_substract, longitud_onda):
@@ -40,11 +40,11 @@ def modos_TEOndasImpares(angulo, modo, n_core, n_cleavy, espesor, n_substract, l
     Valor absoluto del resultado de la ecuacion trascendente despejado a cero, con el fin de minimizar '''
 
     numero_onda = 2 * np.pi / longitud_onda #numero de onda de la iluminacion del guia de onda
-    kappa = n_core * numero_onda * np.cos(angulo) #parametro kappa, depende del angulo del zigzag del guia de onda, esta inmerso en la ecuacion trascendente
-    diferencia_indicesRefraccion = n_core - n_cleavy #diferencia de los indices de refracion del guia de onda
-    cotangente = np.arctan(np.sqrt(1/(numero_onda**2 * diferencia_indicesRefraccion**2 / kappa**2 - 1))) - modo*np.pi #la cotangente fue escrita como una tangente para poder implementar numpy, la cotangente existe porque se estan considerando los modos impares
-    ecuacion_impares = cotangente - kappa * espesor/2 #ecuacion trascendente depejada a cero para los modos impares
-    ecuacion_imparesAbsoluto = np.abs(ecuacion_impares) #sacamos el valor absoluto para que la minimizacion se haga a cero
+    n_efectivo = n_core * np.sin(angulo) #calculo del indice de refraccion efectivo
+    gamma = numero_onda * np.sqrt(n_efectivo**2 - n_cleavy**2) #calculo del factor gamma, el cual depende de las condiciones del recubrimiento
+    kappa = numero_onda * np.sqrt(n_core**2 - n_efectivo**2) #calculo del factor kappa, el cual depende de las condiciones del core
+    ecuacion_trascendente = kappa * espesor/2 - np.arctan(-kappa/gamma) + modo*np.pi #calculo del valor de la ecuacion trascendente despejada a cero
+    ecuacion_imparesAbsoluto = np.abs(ecuacion_trascendente) #se calcula el valor absoluto de la funcion despejada a cero para que minimize funcione a cero
     return ecuacion_imparesAbsoluto #se retorna el valor de la ecuacion trascendente despejado a cero en valor absoluto para minimizarlo
 
 def optimizar_TEOndasPares(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
@@ -96,8 +96,6 @@ def optimizar_TEOndasImPares(n_core, n_cleavy, espesor, modo, n_substract, longi
     
     # Retornar el angulo optimo encontrado y el valor minimo alcanzado
     return resultado.x[0], resultado.fun
-
-
 
 def modos_TMOndasPares(angulo, modo, n_core, n_cleavy, espesor, n_substract, longitud_onda):
     ''' ecuacion de los modos pares para los modos TM calculados a partir de la teoria ondulatoria, retorna el valor absoluto de la ecuacion trascendente

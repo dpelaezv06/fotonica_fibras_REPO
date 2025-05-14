@@ -26,7 +26,6 @@ def modos_TERayos(angulo, n_core, n_cleavy, espesor, modo, n_substract, longitud
     ecuacion_trascendente = fase_acumulada - modo * 2 * np.pi #ecuacion trascendente que habria que minimizar
     ecuacion_valorAbsoluto = np.abs(ecuacion_trascendente) #sacamos el valor absoluto parar evitar los valores negativos, y hacer que la ecuacion trascendente tienda a cero cuando se minimice
     return ecuacion_valorAbsoluto #retornamos el valor de la ecuacion tracendente, hay que hacer que sea cero para calcular el angulo de los modos propagantes
-    
 
 def modos_TMRayos(angulo, n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
     ''' funcion que realiza el calculo de las fases y la ecuacion trascendednte para modos TM
