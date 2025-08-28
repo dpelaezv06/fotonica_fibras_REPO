@@ -101,13 +101,3 @@ def optimizar_TMRayos(n_core, n_cleavy, espesor, modo, n_substract=None, longitu
     
     # Retornar el angulo optimo encontrado y el valor minimo alcanzado
     return resultado.x[0], resultado.fun
-
-def n_efectivo(n_core, angulo):
-    ''' funcion que devuelve los parametros de indice de refraccion efectivo de un modo, dependiendo del angulo de incidencia dentro del guia de onda y el 
-    indice de refraccion del nucleo del guia de onda
-    
-    ENTRADAS:
-    n_core (float) == indice de refraccion del nucleo del guia de onda
-    angulo (float) == angulo (EN RADIANES) de incidencia del zig zag del rayo dentro del guia de onda, es relativo a cada modo de propagacion '''
-    n_efectivo = n_core*np.sin(angulo)
-    return n_efectivo

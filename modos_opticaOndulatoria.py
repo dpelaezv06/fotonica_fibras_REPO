@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.optimize import minimize
+from scipy.optimize import fsolve
 
 def modos_TEOndasPares(angulo, modo, n_core, n_cleavy, espesor, n_substract, longitud_onda):
     ''' ecuacion de los modos pares para los modos TE calculados a partir de la teoria ondulatoria, retorna el valor absoluto de la ecuacion trascendente
@@ -20,9 +21,9 @@ def modos_TEOndasPares(angulo, modo, n_core, n_cleavy, espesor, n_substract, lon
     n_efectivo = n_core * np.sin(angulo) #calculo del indice de refraccion efectivo
     gamma = numero_onda * np.sqrt(n_efectivo**2 - n_cleavy**2) #calculo del factor gamma, el cual depende de las condiciones del recubrimiento
     kappa = numero_onda * np.sqrt(n_core**2 - n_efectivo**2) #calculo del factor kappa, el cual depende de las condiciones del core
-    ecuacion_trascendente = kappa * espesor/2 - np.arctan(gamma/kappa) + modo*np.pi #ecuacion trascendente igualada a cero
-    ecuacion_paresAbsoluto = np.abs(ecuacion_trascendente) #se calcula el valor absoluto para poder optimizar con minimizacion tendiendo a cero
-    return ecuacion_paresAbsoluto #se retorna el valor absoluto del valor de la ecuacion trascendente
+    ecuacion_trascendente = kappa/2 - np.arctan((np.sqrt(((numero_onda**2)*(n_core**2 - n_cleavy**2)) - kappa**2))/kappa)
+    ecuacion_absoluto = np.abs(ecuacion_trascendente)
+    return ecuacion_absoluto #se retorna el valor absoluto del valor de la ecuacion trascendente
 
 def modos_TEOndasImpares(angulo, modo, n_core, n_cleavy, espesor, n_substract, longitud_onda):
     ''' ecuacion de los modos impares para los modos TE calculados a partir de la teoria ondulatoria, retorna el valor absoluto de la ecuacion trascendente
@@ -47,7 +48,7 @@ def modos_TEOndasImpares(angulo, modo, n_core, n_cleavy, espesor, n_substract, l
     ecuacion_imparesAbsoluto = np.abs(ecuacion_trascendente) #se calcula el valor absoluto de la funcion despejada a cero para que minimize funcione a cero
     return ecuacion_imparesAbsoluto #se retorna el valor de la ecuacion trascendente despejado a cero en valor absoluto para minimizarlo
 
-def optimizar_TEOndasPares(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
+def optimizar_TEOndasPares(modo, n_core, n_cleavy, espesor, n_substract, longitud_onda):
     ''' funcion que calcula el angulo optimo para que la ecuacion trascendente de modos TE sea cero
     
     Entradas:
@@ -67,12 +68,12 @@ def optimizar_TEOndasPares(n_core, n_cleavy, espesor, modo, n_substract, longitu
 
     ''' ejecucion de la minimizacion utilizando la funcion modos_TE, el punto de partida para el angulo es el angulo critico + el 0.01% del angulo critico,
     se aplica una restriccion del angulo entre el angulo critico y 90 grados '''
-    resultado = minimize(modos_TEOndasPares, angulo_inicial, args=(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
+    resultado = minimize(modos_TEOndasPares, angulo_inicial, args=(modo, n_core, n_cleavy, espesor, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
     
     # Retornar el angulo optimo encontrado y el valor minimo alcanzado
     return resultado.x[0], resultado.fun
 
-def optimizar_TEOndasImPares(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
+def optimizar_TEOndasImPares(modo, n_core, n_cleavy, espesor, n_substract, longitud_onda):
     ''' funcion que calcula el angulo optimo para que la ecuacion trascendente de modos TE sea cero
     
     Entradas:
@@ -92,7 +93,7 @@ def optimizar_TEOndasImPares(n_core, n_cleavy, espesor, modo, n_substract, longi
 
     ''' ejecucion de la minimizacion utilizando la funcion modos_TE, el punto de partida para el angulo es el angulo critico + el 0.01% del angulo critico,
     se aplica una restriccion del angulo entre el angulo critico y 90 grados '''
-    resultado = minimize(modos_TEOndasImpares, angulo_inicial, args=(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
+    resultado = minimize(modos_TEOndasImpares, angulo_inicial, args=(modo, n_core, n_cleavy, espesor, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
     
     # Retornar el angulo optimo encontrado y el valor minimo alcanzado
     return resultado.x[0], resultado.fun
@@ -136,7 +137,6 @@ def modos_TMOndasImpares(angulo, modo, n_core, n_cleavy, espesor, n_substract, l
     RETORNA:
     Valor absoluto del resultado de la ecuacion trascendente despejado a cero, con el fin de minimizar '''
 
-
     numero_onda = 2*np.pi/longitud_onda #calculo del numero de onda en el vacio k_0
     n_efectivo = n_core * np.sin(angulo) #calculo del indice de refraccion efectivo
     kappa = numero_onda * np.sqrt(n_core**2 - n_efectivo**2) #calculo del parametro kappa que esta relacionado con la onda en el core
@@ -146,7 +146,7 @@ def modos_TMOndasImpares(angulo, modo, n_core, n_cleavy, espesor, n_substract, l
     ecuacion_trascendenteValorAbsoluto = np.abs(ecuacion_trascendente) #se saca el valor absoluto para que el minimo valor que tome sea cero y se pueda minimizar
     return ecuacion_trascendenteValorAbsoluto #se retorna el valor absoluto de la ecuacion trascendente, para pooder minimzar esta funcion
 
-def optimizar_TMOndasPares(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
+def optimizar_TMOndasPares(modo, n_core, n_cleavy, espesor, n_substract, longitud_onda):
     ''' funcion que calcula el angulo optimo para que la ecuacion trascendente de modos TE sea cero
     
     Entradas:
@@ -166,12 +166,12 @@ def optimizar_TMOndasPares(n_core, n_cleavy, espesor, modo, n_substract, longitu
 
     ''' ejecucion de la minimizacion utilizando la funcion modos_TE, el punto de partida para el angulo es el angulo critico + el 0.01% del angulo critico,
     se aplica una restriccion del angulo entre el angulo critico y 90 grados '''
-    resultado = minimize(modos_TMOndasPares, angulo_inicial, args=(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
+    resultado = minimize(modos_TMOndasPares, angulo_inicial, args=(modo, n_core, n_cleavy, espesor, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
     
     # Retornar el angulo optimo encontrado y el valor minimo alcanzado
     return resultado.x[0], resultado.fun
 
-def optimizar_TMOndasImPares(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda):
+def optimizar_TMOndasImPares(modo, n_core, n_cleavy, espesor, n_substract, longitud_onda):
     ''' funcion que calcula el angulo optimo para que la ecuacion trascendente de modos TE sea cero
     
     Entradas:
@@ -191,7 +191,7 @@ def optimizar_TMOndasImPares(n_core, n_cleavy, espesor, modo, n_substract, longi
 
     ''' ejecucion de la minimizacion utilizando la funcion modos_TE, el punto de partida para el angulo es el angulo critico + el 0.01% del angulo critico,
     se aplica una restriccion del angulo entre el angulo critico y 90 grados '''
-    resultado = minimize(modos_TMOndasImpares, angulo_inicial, args=(n_core, n_cleavy, espesor, modo, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
+    resultado = minimize(modos_TMOndasPares, angulo_inicial, args=(modo, n_core, n_cleavy, espesor, n_substract, longitud_onda), bounds=[(angulo_critico, np.pi/2)])
     
     # Retornar el angulo optimo encontrado y el valor minimo alcanzado
     return resultado.x[0], resultado.fun
